@@ -40,4 +40,23 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'users_roles');
+    }
+
+    public function permissions()
+    {
+        return $this->roles->map->permissions->flatten()->pluck('code')->unique();
+    }
+
+    public function assignRole($role)
+    {
+        if (is_string($role)) {
+            $role = Role::whereCode($role)->firstOrFail();
+        }
+
+        $this->roles()->sync($role, false);
+    }
 }
